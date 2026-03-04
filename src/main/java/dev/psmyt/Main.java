@@ -20,21 +20,19 @@ import static java.util.Optional.ofNullable;
 
 public class Main {
     static final DateTimeFormatter HUMAN_READABLE = DateTimeFormatter.ofPattern("<EEEE MMMM d yyyy HH:mm:ss z>");
+    static final Options OPTIONS = new Options()
+            .addOption("h", "prints help")
+            .addOption("n", true, "how many cron dates to print. default: 5")
+            .addOption("z", true, "which zone to use. default: system")
+            .addOption("s", true, "the string to use as a separator. default: '\\n'")
+            .addOption("f", true, "output format. default: <EEEE MMMM d yyyy HH:mm:ss z>");
 
     static void main(String[] args) {
-
-        Options options = new Options();
-        options.addOption("h", "prints help");
-        options.addOption("n", true, "how many cron dates to print. default: 5");
-        options.addOption("z", true, "which zone to use. default: system");
-        options.addOption("s", true, "the string to use as a separator. default: '\\n'");
-        options.addOption("f", true, "output format. default: <EEEE MMMM d yyyy HH:mm:ss z>");
-
         try {
-            CommandLine cmd = new DefaultParser().parse(options, args);
+            CommandLine cmd = new DefaultParser().parse(OPTIONS, args);
 
             if (cmd.hasOption("h") || cmd.getArgList().contains("help")) {
-                printHelp(options);
+                printHelp();
                 System.exit(0);
             }
 
@@ -48,8 +46,8 @@ public class Main {
             DateTimeFormatter formatter = ofNullable(cmd.getOptionValue("f"))
                     .map(DateTimeFormatter::ofPattern)
                     .orElse(HUMAN_READABLE);
-
             CronExpression cronExpression = CronExpression.parse(cmd.getArgList().getFirst());
+
             System.out.println(cronnext(cronExpression, zoneId, formatter, numberOfInstances, separator));
 
         } catch (Exception e) {
@@ -66,7 +64,7 @@ public class Main {
                 .collect(Collectors.joining(separator));
     }
 
-    private static void printHelp(Options options) throws IOException {
+    private static void printHelp() throws IOException {
         String summary = "prints the next n execution dates for a given Spring cron expression";
         String footer = """
                 example:
@@ -83,6 +81,6 @@ public class Main {
         HelpFormatter.builder()
                 .setShowSince(false)
                 .get()
-                .printHelp("cronnext <cron expression>", summary, options, footer, false);
+                .printHelp("cronnext <cron expression>", summary, OPTIONS, footer, false);
     }
 }
