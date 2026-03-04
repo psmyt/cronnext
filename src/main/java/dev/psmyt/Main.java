@@ -19,11 +19,14 @@ import static java.util.Optional.ofNullable;
 
 
 public class Main {
+    static final String SUMMARY = "prints the next n execution dates for a given Spring cron expression";
+
     static final DateTimeFormatter HUMAN_READABLE = DateTimeFormatter.ofPattern("<EEEE MMMM d yyyy HH:mm:ss z>");
+
     static final Options OPTIONS = new Options()
             .addOption("h", "prints help")
             .addOption("n", true, "how many cron dates to print. default: 5")
-            .addOption("z", true, "which zone to use. default: system")
+            .addOption("z", true, "which timezone to use. default: system")
             .addOption("s", true, "the string to use as a separator. default: '\\n'")
             .addOption("f", true, "output format. default: <EEEE MMMM d yyyy HH:mm:ss z>");
 
@@ -56,7 +59,13 @@ public class Main {
         }
     }
 
-    private static String cronnext(CronExpression cronExpression, ZoneId zoneId, DateTimeFormatter formatter, int numberOfInstances, String separator) {
+    private static String cronnext(
+            CronExpression cronExpression,
+            ZoneId zoneId,
+            DateTimeFormatter formatter,
+            int numberOfInstances,
+            String separator
+    ) {
         return Stream.iterate(ZonedDateTime.now(zoneId), cronExpression::next)
                 .skip(1)
                 .limit(numberOfInstances)
@@ -65,7 +74,6 @@ public class Main {
     }
 
     private static void printHelp() throws IOException {
-        String summary = "prints the next n execution dates for a given Spring cron expression";
         String footer = """
                 example:
                 \033[48;5;236m\
@@ -81,6 +89,6 @@ public class Main {
         HelpFormatter.builder()
                 .setShowSince(false)
                 .get()
-                .printHelp("cronnext <cron expression>", summary, OPTIONS, footer, false);
+                .printHelp("cronnext <cron expression>", SUMMARY, OPTIONS, footer, false);
     }
 }
