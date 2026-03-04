@@ -26,7 +26,7 @@ public class Main {
         Options options = new Options();
         options.addOption("h", "prints help");
         options.addOption("n", true, "how many cron dates to print. default: 5");
-        options.addOption("z", true, "which zone to use. default: Europe/Moscow");
+        options.addOption("z", true, "which zone to use. default: system");
         options.addOption("s", true, "the string to use as a separator. default: '\\n'");
         options.addOption("f", true, "output format. default: <EEEE MMMM d yyyy HH:mm:ss z>");
 
@@ -43,7 +43,7 @@ public class Main {
                     .orElse(5);
             ZoneId zoneId = ofNullable(cmd.getOptionValue("z"))
                     .map(ZoneId::of)
-                    .orElse(ZoneId.of("Europe/Moscow"));
+                    .orElse(ZoneId.systemDefault());
             String separator = cmd.hasOption("s") ? cmd.getOptionValue("s") : "\n";
             DateTimeFormatter formatter = ofNullable(cmd.getOptionValue("f"))
                     .map(DateTimeFormatter::ofPattern)
