@@ -5,6 +5,7 @@ import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.help.HelpFormatter;
+import org.apache.commons.text.StringEscapeUtils;
 import org.springframework.scheduling.support.CronExpression;
 
 import java.io.IOException;
@@ -33,7 +34,7 @@ public class Main {
     record ParsedCommandLine(String arg, ZoneId z, DateTimeFormatter f, int n, String s) {
     }
 
-    static void main(String[] args) {
+    public static void main(String[] args) {
         try {
             ParsedCommandLine parsed = parse(args);
             System.out.println(cronnext(parsed));
@@ -66,7 +67,9 @@ public class Main {
         ZoneId z = ofNullable(cmd.getOptionValue("z"))
                 .map(ZoneId::of)
                 .orElse(ZoneId.systemDefault());
-        String s = cmd.hasOption("s") ? cmd.getOptionValue("s") : "\n";
+        String s = ofNullable(cmd.getOptionValue("s"))
+                .map(StringEscapeUtils::unescapeJava)
+                .orElse("\n");
         DateTimeFormatter f = ofNullable(cmd.getOptionValue("f"))
                 .map(DateTimeFormatter::ofPattern)
                 .orElse(HUMAN_READABLE);
