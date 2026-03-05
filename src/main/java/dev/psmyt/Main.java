@@ -11,7 +11,6 @@ import java.io.IOException;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -71,10 +70,15 @@ public class Main {
         DateTimeFormatter f = ofNullable(cmd.getOptionValue("f"))
                 .map(DateTimeFormatter::ofPattern)
                 .orElse(HUMAN_READABLE);
-        String cronExpression = Objects.requireNonNull(
-                cmd.getArgList().getFirst(),
-                "provide an argument - a valid Spring cron expression"
-        );
+        String cronExpression = cmd.getArgList()
+                .stream()
+                .reduce((a1, a2) -> {
+                    throw new UnsupportedOperationException(
+                            "unsupported number of arguments: expected 1 argument, received multiple: %s, %s..."
+                                    .formatted(a1, a2)
+                    );
+                })
+                .orElseThrow(() -> new IllegalArgumentException("provide an argument - a valid Spring cron expression"));
 
         return new ParsedCommandLine(cronExpression, z, f, n, s);
     }
