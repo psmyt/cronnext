@@ -7,7 +7,6 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
@@ -25,11 +24,11 @@ public class CronnextIT {
 
         String output = new String(process.getInputStream().readAllBytes());
 
-        assertEquals(5, output.split("\n").length);
+        assertEquals(5, output.lines().count());
 
         List<Instant> dates;
         try {
-            dates = Arrays.stream(output.split("\n"))
+            dates = output.lines()
                     .map(DateTimeFormatter.ofPattern("<EEE MMM d yyyy HH:mm:ss z>")::parse)
                     .map(Instant::from)
                     .toList();
