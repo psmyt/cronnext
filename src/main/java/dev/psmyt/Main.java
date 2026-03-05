@@ -3,6 +3,7 @@ package dev.psmyt;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.help.HelpFormatter;
 import org.springframework.scheduling.support.CronExpression;
 
@@ -11,6 +12,7 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -21,56 +23,64 @@ import static java.util.Optional.ofNullable;
 public class Main {
     static final String SUMMARY = "prints the next n execution dates for a given Spring cron expression";
 
-    static final DateTimeFormatter HUMAN_READABLE = DateTimeFormatter.ofPattern("<EEEE MMMM d yyyy HH:mm:ss z>");
+    static final DateTimeFormatter HUMAN_READABLE = DateTimeFormatter.ofPattern("<EEE MMM d yyyy HH:mm:ss z>");
 
     static final Options OPTIONS = new Options()
             .addOption("h", "prints help")
             .addOption("n", true, "how many cron dates to print. default: 5")
             .addOption("z", true, "which timezone to use. default: system")
             .addOption("s", true, "the string to use as a separator. default: '\\n'")
-            .addOption("f", true, "output format. default: <EEEE MMMM d yyyy HH:mm:ss z>");
+            .addOption("f", true, "output format. default: <EEE MMMM d yyyy HH:mm:ss z>");
+
+    record ParsedCommandLine(String cronExpression,
+                             ZoneId zoneId,
+                             DateTimeFormatter formatter,
+                             int numberOfInstances,
+                             String separator) {}
 
     static void main(String[] args) {
         try {
-            CommandLine cmd = new DefaultParser().parse(OPTIONS, args);
-
-            if (cmd.hasOption("h") || cmd.getArgList().contains("help")) {
-                printHelp();
-                System.exit(0);
-            }
-
-            int numberOfInstances = ofNullable(cmd.getOptionValue("n"))
-                    .map(Integer::parseInt)
-                    .orElse(5);
-            ZoneId zoneId = ofNullable(cmd.getOptionValue("z"))
-                    .map(ZoneId::of)
-                    .orElse(ZoneId.systemDefault());
-            String separator = cmd.hasOption("s") ? cmd.getOptionValue("s") : "\n";
-            DateTimeFormatter formatter = ofNullable(cmd.getOptionValue("f"))
-                    .map(DateTimeFormatter::ofPattern)
-                    .orElse(HUMAN_READABLE);
-            CronExpression cronExpression = CronExpression.parse(cmd.getArgList().getFirst());
-
-            System.out.println(cronnext(cronExpression, zoneId, formatter, numberOfInstances, separator));
-
+            ParsedCommandLine parsed = parse(args);
+            System.out.println(cronnext(parsed));
         } catch (Exception e) {
             System.err.println(e.getMessage());
             System.exit(1);
         }
     }
 
-    private static String cronnext(
-            CronExpression cronExpression,
-            ZoneId zoneId,
-            DateTimeFormatter formatter,
-            int numberOfInstances,
-            String separator
-    ) {
-        return Stream.iterate(ZonedDateTime.now(zoneId), cronExpression::next)
+    private static String cronnext(ParsedCommandLine cmd) {
+        CronExpression cronExpression = CronExpression.parse(cmd.cronExpression());
+        return Stream.iterate(ZonedDateTime.now(cmd.zoneId()), cronExpression::next)
                 .skip(1)
-                .limit(numberOfInstances)
-                .map(formatter::format)
-                .collect(Collectors.joining(separator));
+                .limit(cmd.numberOfInstances())
+                .map(cmd.formatter()::format)
+                .collect(Collectors.joining(cmd.separator()));
+    }
+
+    private static ParsedCommandLine parse(String[] args) throws ParseException, IOException {
+        CommandLine cmd = new DefaultParser().parse(OPTIONS, args);
+
+        if (cmd.hasOption("h") || cmd.getArgList().contains("help")) {
+            printHelp();
+            System.exit(0);
+        }
+
+        int numberOfInstances = ofNullable(cmd.getOptionValue("n"))
+                .map(Integer::parseInt)
+                .orElse(5);
+        ZoneId zoneId = ofNullable(cmd.getOptionValue("z"))
+                .map(ZoneId::of)
+                .orElse(ZoneId.systemDefault());
+        String separator = cmd.hasOption("s") ? cmd.getOptionValue("s") : "\n";
+        DateTimeFormatter formatter = ofNullable(cmd.getOptionValue("f"))
+                .map(DateTimeFormatter::ofPattern)
+                .orElse(HUMAN_READABLE);
+        String cronExpression = Objects.requireNonNull(
+                cmd.getArgList().getFirst(),
+                "provide an argument, a valid Spring cron expression"
+        );
+
+        return new ParsedCommandLine(cronExpression, zoneId, formatter, numberOfInstances, separator);
     }
 
     private static void printHelp() throws IOException {
@@ -84,7 +94,7 @@ public class Main {
                 """
                 .formatted(
                         Instant.now().atZone(ZoneId.systemDefault()).format(HUMAN_READABLE),
-                        cronnext(CronExpression.parse("10 0 4 */1 * *"), UTC, HUMAN_READABLE, 2, ", ")
+                        cronnext(new ParsedCommandLine("10 0 4 */1 * *", UTC, HUMAN_READABLE, 2, ", "))
                 );
         HelpFormatter.builder()
                 .setShowSince(false)
