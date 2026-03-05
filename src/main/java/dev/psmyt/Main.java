@@ -21,22 +21,18 @@ import static java.util.Optional.ofNullable;
 
 
 public class Main {
-    static final String SUMMARY = "prints the next n execution dates for a given Spring cron expression";
+    static final String SUMMARY = "prints the next n execution dates for a given Spring cron arg";
 
     static final DateTimeFormatter HUMAN_READABLE = DateTimeFormatter.ofPattern("<EEE MMM d yyyy HH:mm:ss z>");
 
     static final Options OPTIONS = new Options()
             .addOption("h", "prints help")
-            .addOption("n", true, "how many cron dates to print. default: 5")
             .addOption("z", true, "which timezone to use. default: system")
-            .addOption("s", true, "the string to use as a separator. default: '\\n'")
-            .addOption("f", true, "output format. default: <EEE MMMM d yyyy HH:mm:ss z>");
+            .addOption("f", true, "output format. default: <EEE MMMM d yyyy HH:mm:ss z>")
+            .addOption("n", true, "how many cron dates to print. default: 5")
+            .addOption("s", true, "the string to use as a separator. default: '\\n'");
 
-    record ParsedCommandLine(String cronExpression,
-                             ZoneId zoneId,
-                             DateTimeFormatter formatter,
-                             int numberOfInstances,
-                             String separator) {}
+    record ParsedCommandLine(String arg, ZoneId z, DateTimeFormatter f, int n, String s) {}
 
     static void main(String[] args) {
         try {
@@ -49,12 +45,12 @@ public class Main {
     }
 
     private static String cronnext(ParsedCommandLine cmd) {
-        CronExpression cronExpression = CronExpression.parse(cmd.cronExpression());
-        return Stream.iterate(ZonedDateTime.now(cmd.zoneId()), cronExpression::next)
+        CronExpression cronExpression = CronExpression.parse(cmd.arg());
+        return Stream.iterate(ZonedDateTime.now(cmd.z()), cronExpression::next)
                 .skip(1)
-                .limit(cmd.numberOfInstances())
-                .map(cmd.formatter()::format)
-                .collect(Collectors.joining(cmd.separator()));
+                .limit(cmd.n())
+                .map(cmd.f()::format)
+                .collect(Collectors.joining(cmd.s()));
     }
 
     private static ParsedCommandLine parse(String[] args) throws ParseException, IOException {
@@ -65,22 +61,22 @@ public class Main {
             System.exit(0);
         }
 
-        int numberOfInstances = ofNullable(cmd.getOptionValue("n"))
+        int n = ofNullable(cmd.getOptionValue("n"))
                 .map(Integer::parseInt)
                 .orElse(5);
-        ZoneId zoneId = ofNullable(cmd.getOptionValue("z"))
+        ZoneId z = ofNullable(cmd.getOptionValue("z"))
                 .map(ZoneId::of)
                 .orElse(ZoneId.systemDefault());
-        String separator = cmd.hasOption("s") ? cmd.getOptionValue("s") : "\n";
-        DateTimeFormatter formatter = ofNullable(cmd.getOptionValue("f"))
+        String s = cmd.hasOption("s") ? cmd.getOptionValue("s") : "\n";
+        DateTimeFormatter f = ofNullable(cmd.getOptionValue("f"))
                 .map(DateTimeFormatter::ofPattern)
                 .orElse(HUMAN_READABLE);
         String cronExpression = Objects.requireNonNull(
                 cmd.getArgList().getFirst(),
-                "provide an argument, a valid Spring cron expression"
+                "provide an argument, a valid Spring cron arg"
         );
 
-        return new ParsedCommandLine(cronExpression, zoneId, formatter, numberOfInstances, separator);
+        return new ParsedCommandLine(cronExpression, z, f, n, s);
     }
 
     private static void printHelp() throws IOException {
@@ -99,6 +95,6 @@ public class Main {
         HelpFormatter.builder()
                 .setShowSince(false)
                 .get()
-                .printHelp("cronnext <cron expression>", SUMMARY, OPTIONS, footer, false);
+                .printHelp("cronnext <cron arg>", SUMMARY, OPTIONS, footer, false);
     }
 }
