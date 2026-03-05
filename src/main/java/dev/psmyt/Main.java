@@ -32,14 +32,15 @@ public class Main {
             .addOption("n", true, "how many cron dates to print. default: 5")
             .addOption("s", true, "the string to use as a separator. default: '\\n'");
 
-    record ParsedCommandLine(String arg, ZoneId z, DateTimeFormatter f, int n, String s) {}
+    record ParsedCommandLine(String arg, ZoneId z, DateTimeFormatter f, int n, String s) {
+    }
 
     static void main(String[] args) {
         try {
             ParsedCommandLine parsed = parse(args);
             System.out.println(cronnext(parsed));
         } catch (Exception e) {
-            System.err.println(e.getMessage());
+            System.err.println(e.getClass() + ": " + e.getMessage());
             System.exit(1);
         }
     }
