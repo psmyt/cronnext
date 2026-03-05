@@ -8,7 +8,6 @@ import org.apache.commons.cli.help.HelpFormatter;
 import org.springframework.scheduling.support.CronExpression;
 
 import java.io.IOException;
-import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -21,7 +20,7 @@ import static java.util.Optional.ofNullable;
 
 
 public class Main {
-    static final String SUMMARY = "prints the next n execution dates for a given Spring cron arg";
+    static final String SUMMARY = "prints the next n execution dates for a given Spring cron expression";
 
     static final DateTimeFormatter HUMAN_READABLE = DateTimeFormatter.ofPattern("<EEE MMM d yyyy HH:mm:ss z>");
 
@@ -40,7 +39,7 @@ public class Main {
             ParsedCommandLine parsed = parse(args);
             System.out.println(cronnext(parsed));
         } catch (Exception e) {
-            System.err.println(e.getClass() + ": " + e.getMessage());
+            System.err.println(e.getClass().getSimpleName() + ": " + e.getMessage());
             System.exit(1);
         }
     }
@@ -74,7 +73,7 @@ public class Main {
                 .orElse(HUMAN_READABLE);
         String cronExpression = Objects.requireNonNull(
                 cmd.getArgList().getFirst(),
-                "provide an argument, a valid Spring cron arg"
+                "provide an argument - a valid Spring cron expression"
         );
 
         return new ParsedCommandLine(cronExpression, z, f, n, s);
@@ -90,7 +89,7 @@ public class Main {
                 %s
                 """
                 .formatted(
-                        Instant.now().atZone(ZoneId.systemDefault()).format(HUMAN_READABLE),
+                        ZonedDateTime.now(ZoneId.systemDefault()).format(HUMAN_READABLE),
                         cronnext(new ParsedCommandLine("10 0 4 */1 * *", UTC, HUMAN_READABLE, 2, ", "))
                 );
         HelpFormatter.builder()
