@@ -31,6 +31,12 @@
             <version>1.15.0</version>
             <scope>compile</scope>
         </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>5.13.3</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
@@ -45,16 +51,16 @@
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <version>3.3.0</version>
-                <configuration>
-                    <archive>
-                        <manifest>
-                            <mainClass>dev.psmyt.Main</mainClass>
-                            <addClasspath>true</addClasspath>
-                        </manifest>
-                    </archive>
-                </configuration>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <version>3.5.4</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>integration-test</goal>
+                            <goal>verify</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
@@ -68,6 +74,10 @@
                         <artifactId>native-maven-plugin</artifactId>
                         <version>0.11.3</version>
                         <extensions>true</extensions>
+                        <configuration>
+                            <mainClass>dev.psmyt.Main</mainClass>
+                            <imageName>cronnext</imageName>
+                        </configuration>
                         <executions>
                             <execution>
                                 <id>build-native</id>
