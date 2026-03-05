@@ -72,7 +72,7 @@
                     <plugin>
                         <groupId>org.graalvm.buildtools</groupId>
                         <artifactId>native-maven-plugin</artifactId>
-                        <version>0.11.3</version>
+                        <version>0.10.5</version>
                         <extensions>true</extensions>
                         <configuration>
                             <mainClass>dev.psmyt.Main</mainClass>
