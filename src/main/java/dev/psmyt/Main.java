@@ -27,14 +27,14 @@ public class Main {
     static final Options OPTIONS = new Options()
             .addOption("h", "prints help")
             .addOption("z", true, "which timezone to use. default: system")
-            .addOption("f", true, "output format. default: <EEE MMMM d yyyy HH:mm:ss z>")
+            .addOption("f", true, "output format. default: <EEE MMM d yyyy HH:mm:ss z>")
             .addOption("n", true, "how many cron dates to print. default: 5")
             .addOption("s", true, "the string to use as a separator. default: '\\n'");
 
     record ParsedCommandLine(String arg, ZoneId z, DateTimeFormatter f, int n, String s) {
     }
 
-    public static void main(String[] args) {
+    static void main(String[] args) {
         try {
             ParsedCommandLine parsed = parse(args);
             System.out.println(cronnext(parsed));
