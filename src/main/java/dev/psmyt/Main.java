@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -46,7 +47,7 @@ public class Main {
 
     private static String cronnext(ParsedCommandLine cmd) {
         CronExpression cronExpression = CronExpression.parse(cmd.arg());
-        return Stream.iterate(ZonedDateTime.now(cmd.z()), cronExpression::next)
+        return Stream.iterate(ZonedDateTime.now(cmd.z()), Objects::nonNull, cronExpression::next)
                 .skip(1)
                 .limit(cmd.n())
                 .map(cmd.f()::format)
