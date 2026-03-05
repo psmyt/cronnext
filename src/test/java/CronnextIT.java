@@ -17,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class CronnextIT {
 
     @Test
-    public void noArgsTest() throws IOException {
+    public void noOptionsTest() throws IOException {
         Instant testStarted = Instant.now();
         Process process = executeWithArgs(List.of("0 0/15 * * * ?"));
 
@@ -39,7 +39,7 @@ public class CronnextIT {
 
         assertTrue(
                 Duration.between(testStarted, dates.getFirst()).compareTo(Duration.ofMinutes(15)) < 0,
-                "expected the first date(%s) to be less than 15 min away from when the test started(%s)"
+                "expected the first date(%s) to be within 15 min from the test start time(%s)"
                         .formatted(dates.getFirst(), testStarted)
         );
 

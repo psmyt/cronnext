@@ -1,6 +1,6 @@
 # cronnext
 ## prints the next n execution dates for a given Spring cron expression
-### how:
+### instructions:
 1. install [GraalVM](https://www.graalvm.org/latest/getting-started/)
 2. run `mvn -Pnative package`
 3. this will produce a binary named cronnext in /target
