@@ -29,10 +29,15 @@ jobs:
           distribution: graalvm
           github-token: ${{ secrets.GITHUB_TOKEN }}
       - run: mvn -B -Pnative install
+      - run: tar -czf cronnext-${{ matrix.suffix }}.tar.gz -C target cronnext
+        if: matrix.ext == ''
+      - run: Compress-Archive -Path target/cronnext.exe -DestinationPath cronnext-${{ matrix.suffix }}.zip
+        if: matrix.ext == '.exe'
+        shell: pwsh
       - uses: actions/upload-artifact@v4
         with:
           name: cronnext-${{ matrix.suffix }}
-          path: target/cronnext${{ matrix.ext || '' }}
+          path: cronnext-${{ matrix.suffix }}.*
   release:
     needs: build
     runs-on: ubuntu-latest
@@ -40,7 +45,6 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           path: dist/
-          merge-multiple: true
       - uses: softprops/action-gh-release@v2
         with:
           files: dist/**
