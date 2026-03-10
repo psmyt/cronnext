@@ -31,7 +31,9 @@ jobs:
       - run: mvn -B -Pnative install
       - run: tar -czf cronnext-${{ matrix.suffix }}.tar.gz -C target cronnext
         if: matrix.ext == ''
-      - run: Compress-Archive -Path target/cronnext.exe -DestinationPath cronnext-${{ matrix.suffix }}.zip
+      - run: |
+          echo "Requires Visual C++ Redistributable" > notes.txt
+          Compress-Archive -Path target/cronnext.exe, notes.txt -DestinationPath cronnext-${{ matrix.suffix }}.zip
         if: matrix.ext == '.exe'
         shell: pwsh
       - uses: actions/upload-artifact@v4
